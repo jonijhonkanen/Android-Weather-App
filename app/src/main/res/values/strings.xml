@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Weather App</string>
+    <string name="default_location">Current location</string>
+    <string name="default_temperature">Temperature</string>
+    <string name="default_image">Weather image</string>
+    <string name="default_description">Description</string>
+    <string name="default_wind">Wind speed</string>
+    <string name="text_field_hint">Use your current location or write one</string>
+    <string name="search_button_title">Get Weather Info</string>
+
 </resources>
