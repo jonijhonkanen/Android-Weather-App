@@ -2,8 +2,47 @@ package fi.tuni.weatherapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.concurrent.thread
+
+//Provide data classes
+/*
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WeatherResult(
+    var list : MutableList<WeatherItem>? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WeatherItem(
+    var weather : Weather? = null,
+)
+*/
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Weather(
+    var weather : MutableList<Main>? = null,
+    var main: Temperature? = null,
+    var wind: Wind? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Main(
+    var description: String = "",
+    var icon : String? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Temperature(
+    var temp: Double? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Wind(
+    var speed: Double? = null,
+)
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         button = findViewById(R.id.button)
 
     }
+
 
 
 }
