@@ -9,5 +9,7 @@
     <string name="search_button_title">Get Weather Info</string>
 
     <string name="api_key">fd3e1dc8b00f86224410cd96b97454eb</string>
+    <string name="temp_cel"> %1$s °C</string>
+    <string name="wind_metric"> %1$s m/s</string>
 
 </resources>

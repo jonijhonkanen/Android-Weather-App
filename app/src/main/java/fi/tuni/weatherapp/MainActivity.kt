@@ -9,10 +9,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -95,11 +92,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //Default image
         weatherImage = findViewById(R.id.icon)
+
+        locationTextView = findViewById(R.id.location_name)
+        desc = findViewById(R.id.description)
+        windText = findViewById(R.id.wind)
+        temperatureText = findViewById(R.id.temperature)
+
+        textField = findViewById(R.id.editText)
 
         apikey = getString(R.string.api_key)
         lang = "en"
-        locText = "Tampere"
+        locText = ""
         unit = "metric"
         iconCode = ""
 
@@ -108,12 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         //https://api.openweathermap.org/data/2.5/weather?lat=${gpsLocation.lat}&lon=${gpsLocation.lon}&units=metric&lang=${lang}&appid=${APIKey}
 
-        locationTextView = findViewById(R.id.location_name)
-        desc = findViewById(R.id.description)
-        windText = findViewById(R.id.wind)
-        temperatureText = findViewById(R.id.temperature)
 
-        textField = findViewById(R.id.editText)
 
         //val locationManager : LocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -126,6 +126,11 @@ class MainActivity : AppCompatActivity() {
 
     //Operate UI changes
     private fun makeRequest() {
+
+        //Disable button while processing data fetch
+        runOnUiThread {
+            button.isEnabled = false
+        }
         //Log.d("valmisjson", locText)
         //Log.d("valmisjson", textField.text.toString())
 
@@ -134,29 +139,39 @@ class MainActivity : AppCompatActivity() {
             Log.d("valmisjson", "Use current location!")
         }*/
 
-        //Location update here
-        //var currentLoc : Location =
-        fetchLocation()
+        //Use current text input for location
+        locText = textField.text.toString()
+
+        //Location update here, if no location given
+        if (locText.isEmpty()){
+            fetchLocation()
+        }
 
         this.url = when(textField.text.isEmpty()) {
             false -> "https://api.openweathermap.org/data/2.5/weather?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}"
             true -> "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
         }
+        Log.d("valmisjson", locText)
         Log.d("valmisjson", url)
         thread() {
 
-            //This works
+            //Get json
             val json : String? = fetchData(url)
+
+            var list : MutableList<Main>? = null
+            var t : Double? = null
+            var windSpeed : Double? = null
+
+            //Process json if not null
             if (json != null) {
                 Log.d("valmisjson", json)
+                val result : Weather? = ObjectMapper().readValue(json, Weather::class.java)
+                list = result?.weather
+                t = result?.main?.temp
+                windSpeed = result?.wind?.speed
             }
 
-            val result : Weather? = ObjectMapper().readValue(json, Weather::class.java)
-            val list = result?.weather
-            val t = result?.main?.temp.toString()
-            val windSpeed = result?.wind?.speed.toString()
-
-
+            //Process only if json result list is valid
             if(list != null){
                 //Log.d("valmisjson", result.toString())
 
@@ -188,11 +203,17 @@ class MainActivity : AppCompatActivity() {
 
                     //UI Texts
                     desc.text = test
-                    temperatureText.text = t
-                    windText.text = windSpeed
+                    temperatureText.text = getString(R.string.temp_cel, t.toString())
+                    windText.text = getString(R.string.wind_metric, windSpeed.toString())
+                    locationTextView.text = if (textField.text.isEmpty()) "At current location" else textField.text.toString()
+                    button.isEnabled = true
 
-                    if (textField.text.isEmpty()) "At current location" else locText = textField.text.toString()
-
+                }
+            } else {
+                Log.d("valmisjson", "Non-valid data fetch!")
+                runOnUiThread {
+                    button.isEnabled = true
+                    Toast.makeText(applicationContext, "Error while fetching data!", Toast.LENGTH_SHORT,).show()
                 }
             }
         }
@@ -205,24 +226,31 @@ class MainActivity : AppCompatActivity() {
         var result: String?
         val buffer = StringBuffer()
         val myUrl = URL(url)
-        val conn = myUrl.openConnection() as HttpURLConnection
-        val inputStream = conn.inputStream
-        val reader = BufferedReader(InputStreamReader(inputStream))
 
-        reader.use {
-            var line: String?
-            do {
-                line = it.readLine()
-                buffer.append(line)
-            } while (line != null)
-            result = buffer.toString()
+        //This can fail
+        try {
+            val conn = myUrl.openConnection() as HttpURLConnection
+            val inputStream = conn.inputStream
+            val reader = BufferedReader(InputStreamReader(inputStream))
+
+            reader.use {
+                var line: String?
+                do {
+                    line = it.readLine()
+                    buffer.append(line)
+                } while (line != null)
+                result = buffer.toString()
+            }
+            /*
+            if (result != null) {
+                Log.d("haku", result!!)
+            }*/
+
+            return result
+        } catch (e : Exception) {
+            e.printStackTrace()
+            return null
         }
-
-        if (result != null) {
-            Log.d("haku", result!!)
-        }
-
-        return result
 
     }
 
@@ -252,14 +280,7 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return
+
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -269,24 +290,29 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location : Location? ->
                 // Got last known location. In some rare situations this can be null.
-                Log.d("valmisjson", location.toString())
                 if (location != null) {
+                    Log.d("locFetch", location.toString())
                     lat = location.latitude
                     lon = location.longitude
 
-                    Log.d("valmisjson", lat.toString())
-                    Log.d("valmisjson", lon.toString())
+                    Log.d("locFetch", lat.toString())
+                    Log.d("locFetch", lon.toString())
                 } else {
                     lat = null
                     lon = null
                 }
             }
-
-
-
     }
 
     /*
+            //Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            //return
         try {
             if (ContextCompat.checkSelfPermission(
                     applicationContext,
