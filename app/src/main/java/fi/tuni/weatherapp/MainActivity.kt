@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener() {
             makeRequest()
         }
+        fetchLocation()
     }
 
     //Operate UI changes
