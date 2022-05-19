@@ -24,7 +24,7 @@
         android:layout_marginTop="88dp"
         android:layout_weight="1"
         android:contentDescription="@string/default_image"
-        android:src="@drawable/d01"
+        android:src="@drawable/default_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -75,6 +75,7 @@
         android:ems="10"
         android:hint="@string/text_field_hint"
         android:inputType="textPersonName"
+        android:scrollHorizontally="true"
         android:text=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"

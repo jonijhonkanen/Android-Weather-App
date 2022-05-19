@@ -2,12 +2,14 @@ package fi.tuni.weatherapp
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -67,6 +70,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var textField : EditText
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+
     //UI Image
     lateinit var weatherImage : ImageView
     var weatherIcon : Bitmap? = null
@@ -84,8 +88,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var unit : String
     lateinit var iconCode : String
     //Using Tampere as default
-    var lat : Double? = 61.4991
+    /*
+    * var lat : Double? = 61.4991
     var lon : Double? = 23.7871
+    * */
+    var lat : Double? = null
+    var lon : Double? = null
     var url : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,9 +121,6 @@ class MainActivity : AppCompatActivity() {
 
         //https://api.openweathermap.org/data/2.5/weather?lat=${gpsLocation.lat}&lon=${gpsLocation.lon}&units=metric&lang=${lang}&appid=${APIKey}
 
-
-
-        //val locationManager : LocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         button = findViewById(R.id.button)
@@ -143,18 +148,23 @@ class MainActivity : AppCompatActivity() {
         locText = textField.text.toString()
 
         //Location update here, if no location given
-        if (locText.isEmpty()){
+        if (locText.isEmpty() || (lat == null && lon == null)){
+            Log.d("valmisjson", "Fetching location...")
             fetchLocation()
         }
+
+        Log.d("valmisjson", lon.toString())
+        Log.d("valmisjson", lat.toString())
 
         this.url = when(textField.text.isEmpty()) {
             false -> "https://api.openweathermap.org/data/2.5/weather?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}"
             true -> "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
         }
-        Log.d("valmisjson", locText)
+        //Log.d("valmisjson", locText)
         Log.d("valmisjson", url)
-        thread() {
 
+        //Perform data fetch in a separate thread
+        thread() {
             //Get json
             val json : String? = fetchData(url)
 
@@ -269,10 +279,121 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchLocation() {
-        Log.d("valmisjson", "Fetching current location!")
+        Log.d("locFetch", "Fetching current location!")
         //Request permission for location
+        if(checkPermissions()) {
+            if(isLocationEnabled()) {
 
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf( Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
+                        PERMISSION_REQUEST_ACCESS_LOCATION
+                    )
+                    return
+                }
+                fusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
+                    val location : Location? = task.result
+                    if(location != null) {
+                        //Log.d("locFetch", location.toString())
+
+                        lon = location.longitude
+                        lat = location.latitude
+                        url = "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
+                        Log.d("locFetch", lon.toString())
+                        Log.d("locFetch", lat.toString())
+                    } else {
+                        Log.d("locFetch", "Location fetch failed")
+                        Toast.makeText(this, "Location fetch failed!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            } else {
+                //Enable via settings
+                Toast.makeText(this, "Allow location data", Toast.LENGTH_SHORT).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+
+        } else {
+            //Make permission request
+            makePermissionRequest()
+            return
+        }
+    }
+
+    companion object {
+        const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
+    }
+
+    private fun checkPermissions() : Boolean {
+        //Check permissions first
         if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+
+        return false
+    }
+
+    private fun makePermissionRequest() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf( Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
+            PERMISSION_REQUEST_ACCESS_LOCATION
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if(requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(applicationContext, "Permission granted", Toast.LENGTH_SHORT).show()
+                //Update location
+                //fetchLocation()
+            } else {
+                Toast.makeText(applicationContext, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun isLocationEnabled() : Boolean {
+        val locationManager : LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        //Return either GPS or Internet
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    /*
+            //Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            //return
+
+            if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -287,6 +408,22 @@ class MainActivity : AppCompatActivity() {
                 101
             )
         }
+        try {
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    101
+                )
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location : Location? ->
                 // Got last known location. In some rare situations this can be null.
@@ -302,31 +439,7 @@ class MainActivity : AppCompatActivity() {
                     lon = null
                 }
             }
-    }
 
-    /*
-            //Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return
-        try {
-            if (ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    101
-                )
-            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }*/
+        */
 
 }
