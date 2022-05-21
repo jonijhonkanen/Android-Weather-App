@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.math.roundToInt
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -31,11 +32,13 @@ data class Info(
     var description : String? = null,
 )
 
+var unit : String? = null
+var tempLabel : String? = null
 class ForecastActivity : AppCompatActivity() {
 
     private lateinit var recyclerView : RecyclerView
-
     private var forecast : String? = null
+
     private var extras: Bundle? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +51,7 @@ class ForecastActivity : AppCompatActivity() {
 
         if(extras != null) {
             forecast = extras!!.getString("forecast")
+            unit = extras!!.getString("unit")
             if(forecast != null) {
                 Log.d("forecast", forecast!!)
                 processForecast(forecast!!)
@@ -67,12 +71,22 @@ class ForecastActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val currentItem = itemList[position]
             holder.descText.text = currentItem.weather?.get(0)?.description ?: "Not found"
-            holder.tempText.text = currentItem.main?.temp.toString()
+            holder.timeStamp.text = currentItem.dt_txt
+
+            //Set unit for temperature
+            when(unit) {
+                "metric" -> tempLabel = " °C"
+                "imperial" -> tempLabel = " °F"
+            }
+
+            val tempLabelText = currentItem.main?.temp?.roundToInt().toString() + tempLabel
+            holder.tempText.text = tempLabelText
         }
 
         override fun getItemCount() = itemList.size
 
         class MyViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
+            val timeStamp : TextView = itemView.findViewById(R.id.forecast_time)
             val descText : TextView = itemView.findViewById(R.id.forecast_description)
             val tempText : TextView = itemView.findViewById(R.id.forecast_temp)
         }
@@ -86,27 +100,22 @@ class ForecastActivity : AppCompatActivity() {
 
         if (list != null) {
             for (item in list) {
+
+                //Capitalize the first letter of each description
                 val descText = item.weather!![0].description
                 if (descText != null) {
                     item.weather!![0].description = descText.replaceFirstChar { it.uppercase() }
                 }
-                //.replaceFirstChar { it.uppercase() }
-                item.weather?.get(0)?.let { it.description?.let { it1 -> Log.d("forecast", it1) } }
-                Log.d("forecast", item.toString())
 
+                //item.weather?.get(0)?.let { it.description?.let { it1 -> Log.d("forecast", it1) } }
+                //Log.d("forecast", item.toString())
+                Log.d("forecast", item.dt_txt!!)
                 //Send list to adapter
                 runOnUiThread {
-
                     //Set adapter with person list
                     recyclerView.adapter = ViewAdapter(list)
                     recyclerView.layoutManager = LinearLayoutManager(this)
                     recyclerView.setHasFixedSize(true)
-
-                    /*
-                    list.forEach {
-                        //adapter.add(it)
-                        //callback(it.toString())
-                    }*/
                 }
             }
         }

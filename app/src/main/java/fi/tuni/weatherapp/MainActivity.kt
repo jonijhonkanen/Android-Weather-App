@@ -26,6 +26,7 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+import kotlin.math.roundToInt
 
 
 //Provide data classes
@@ -45,11 +46,13 @@ data class Main(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Temperature(
     var temp: Double? = null,
+    //var temp: Int? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Wind(
     var speed: Double? = null,
+    //var speed: Int? = null,
 )
 
 class MainActivity : AppCompatActivity() {
@@ -77,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var locText : String
     lateinit var unit : String
     lateinit var iconCode : String
+    private var count : Int = 8
     //Using Tampere as default
     /*
     * var lat : Double? = 61.4991
@@ -108,7 +112,6 @@ class MainActivity : AppCompatActivity() {
 
         //url = "https://api.openweathermap.org/data/2.5/weather?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}"
         //https://api.openweathermap.org/data/2.5/weather?q=Tampere&units=metric&lang=en&appid=fd3e1dc8b00f86224410cd96b97454eb
-
         //https://api.openweathermap.org/data/2.5/weather?lat=${gpsLocation.lat}&lon=${gpsLocation.lon}&units=metric&lang=${lang}&appid=${APIKey}
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -122,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         forecastButton.setOnClickListener() {
             fetchForecast()
         }
-        //fetchLocation()
+        fetchLocation()
 
     }
 
@@ -133,13 +136,6 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             button.isEnabled = false
         }
-        //Log.d("valmisjson", locText)
-        //Log.d("valmisjson", textField.text.toString())
-
-        /*
-        if(textField.text.isEmpty()) {
-            Log.d("valmisjson", "Use current location!")
-        }*/
 
         //Use current text input for location
         locText = textField.text.toString()
@@ -166,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             val json : String? = fetchData(url)
 
             var list : MutableList<Main>? = null
-            var t : Double? = null
+            var temp : Double? = null
             var windSpeed : Double? = null
 
             //Process json if not null
@@ -174,24 +170,16 @@ class MainActivity : AppCompatActivity() {
                 Log.d("valmisjson", json)
                 val result : Weather? = ObjectMapper().readValue(json, Weather::class.java)
                 list = result?.weather
-                t = result?.main?.temp
+                temp = result?.main?.temp
                 windSpeed = result?.wind?.speed
             }
 
             //Process only if json result list is valid
             if(list != null){
-                //Log.d("valmisjson", result.toString())
-
-                /*
-                for(item : Main? in list) {
-                    Log.d("valmisjson", item.toString())
-                }*/
 
                 val test = list[0].description.replaceFirstChar { it.uppercase() }
                 val iconCode = list[0].icon
-                //Log.d("valmisjson", test)
-                //Log.d("valmisjson", t)
-                //Log.d("valmisjson", windSpeed)
+
 
                 //Check icon code validity
                 if (iconCode != null && iconCode.isNotEmpty()) {
@@ -210,8 +198,12 @@ class MainActivity : AppCompatActivity() {
 
                     //UI Texts
                     desc.text = test
-                    temperatureText.text = getString(R.string.temp_cel, t.toString())
-                    windText.text = getString(R.string.wind_metric, windSpeed.toString())
+                    if (temp != null) {
+                        temperatureText.text = getString(R.string.temp_cel, temp.roundToInt().toString())
+                    }
+                    if (windSpeed != null) {
+                        windText.text = getString(R.string.wind_metric, windSpeed.roundToInt().toString())
+                    }
                     locationTextView.text = if (textField.text.isEmpty()) "At current location" else textField.text.toString()
                     button.isEnabled = true
 
@@ -389,8 +381,8 @@ class MainActivity : AppCompatActivity() {
             fetchLocation()
         }
         this.url = when(locText.isEmpty()) {
-            false -> "https://api.openweathermap.org/data/2.5/forecast?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=3"
-            true -> "https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=3"
+            false -> "https://api.openweathermap.org/data/2.5/forecast?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=${count}"
+            true -> "https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=${count}"
         }
         Log.d("forecast", url)
         thread {
@@ -402,73 +394,16 @@ class MainActivity : AppCompatActivity() {
                 val forecastIntent = Intent(this, ForecastActivity::class.java)
                 //Set extras
                 forecastIntent.putExtra("forecast", forecastJson)
+                forecastIntent.putExtra("unit", unit)
                 runOnUiThread { forecastButton.isEnabled = true }
                 startActivity(forecastIntent)
             } else {
                 Log.d("forecast", "Forecast fetch failed!")
-                runOnUiThread { forecastButton.isEnabled = true }
-            }
-        }
-
-    }
-
-    /*
-            //Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return
-
-            if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                101
-            )
-        }
-        try {
-            if (ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    101
-                )
-            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location : Location? ->
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    Log.d("locFetch", location.toString())
-                    lat = location.latitude
-                    lon = location.longitude
-
-                    Log.d("locFetch", lat.toString())
-                    Log.d("locFetch", lon.toString())
-                } else {
-                    lat = null
-                    lon = null
+                runOnUiThread {
+                    Toast.makeText(this, "Forecast fetch failed!", Toast.LENGTH_SHORT).show()
+                    forecastButton.isEnabled = true
                 }
             }
-
-        */
-
+        }
+    }
 }

@@ -5,12 +5,13 @@
     <string name="default_image">Weather image</string>
     <string name="default_description">Description</string>
     <string name="default_wind">Wind speed</string>
-    <string name="text_field_hint">Use your current location \n or write one</string>
+    <string name="text_field_hint">At your current location</string>
+    <string name="text_field_guide">Use your current location or write one</string>
     <string name="search_button_title">Get Weather Info</string>
     <string name="forecast_def_title">Get forecast</string>
 
     <string name="api_key">fd3e1dc8b00f86224410cd96b97454eb</string>
-    <string name="temp_cel"> %1$s °C</string>
-    <string name="wind_metric"> %1$s m/s</string>
+    <string name="temp_cel"> %1$s°C</string>
+    <string name="wind_metric">Wind %1$s m/s</string>
 
 </resources>

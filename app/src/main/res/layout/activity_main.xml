@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="36sp"
+        android:textStyle="bold"
+        android:maxLines="2"
         android:layout_margin="20dp"
         android:gravity="center"
         android:text="@string/default_location"
@@ -65,21 +67,36 @@
         app:layout_constraintVertical_bias="0.36"
         tools:layout_editor_absoluteX="24dp" />
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_field_guide"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.141"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.526" />
+
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:autofillHints=""
-        android:textSize="24sp"
         android:ems="10"
         android:hint="@string/text_field_hint"
         android:inputType="textPersonName"
         android:scrollHorizontally="true"
         android:text="Tampere"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="61dp" />
+        app:layout_constraintVertical_bias="0.604"
+        tools:layout_editor_absoluteX="20dp" />
 
     <Button
         android:id="@+id/button"
@@ -102,5 +119,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.797" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
