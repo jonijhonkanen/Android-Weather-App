@@ -29,17 +29,6 @@ import kotlin.concurrent.thread
 
 
 //Provide data classes
-/*
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class WeatherResult(
-    var list : MutableList<WeatherItem>? = null
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class WeatherItem(
-    var weather : Weather? = null,
-)
-*/
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Weather(
     var weather : MutableList<Main>? = null,
@@ -67,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     //UI Functionalities
     lateinit var button : Button
+    lateinit var forecastButton : Button
     lateinit var textField : EditText
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -127,7 +117,13 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener() {
             makeRequest()
         }
-        fetchLocation()
+
+        forecastButton = findViewById(R.id.forecast_button)
+        forecastButton.setOnClickListener() {
+            fetchForecast()
+        }
+        //fetchLocation()
+
     }
 
     //Operate UI changes
@@ -149,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         locText = textField.text.toString()
 
         //Location update here, if no location given
-        if (locText.isEmpty() || (lat == null && lon == null)){
+        if (locText.isEmpty()){
             Log.d("valmisjson", "Fetching location...")
             fetchLocation()
         }
@@ -238,7 +234,7 @@ class MainActivity : AppCompatActivity() {
         val buffer = StringBuffer()
         val myUrl = URL(url)
 
-        //This can fail
+        //Create connection and get json response as string
         try {
             val conn = myUrl.openConnection() as HttpURLConnection
             val inputStream = conn.inputStream
@@ -252,10 +248,6 @@ class MainActivity : AppCompatActivity() {
                 } while (line != null)
                 result = buffer.toString()
             }
-            /*
-            if (result != null) {
-                Log.d("haku", result!!)
-            }*/
 
             return result
         } catch (e : Exception) {
@@ -382,6 +374,42 @@ class MainActivity : AppCompatActivity() {
         val locationManager : LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         //Return either GPS or Internet
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun fetchForecast() {
+
+        locText = textField.text.toString()
+
+        forecastButton.isEnabled = false
+        Log.d("forecast", "Fetching forecast")
+        Log.d("forecast", locText)
+        //Check if the location is defined
+        if (locText.isEmpty()){
+            Log.d("valmisjson", "Fetching location...")
+            fetchLocation()
+        }
+        this.url = when(locText.isEmpty()) {
+            false -> "https://api.openweathermap.org/data/2.5/forecast?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=3"
+            true -> "https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=3"
+        }
+        Log.d("forecast", url)
+        thread {
+            val forecastJson : String? = fetchData(url)
+
+            if(forecastJson != null) {
+                //Send json data to another activity
+                //Log.d("forecast", forecastJson)
+                val forecastIntent = Intent(this, ForecastActivity::class.java)
+                //Set extras
+                forecastIntent.putExtra("forecast", forecastJson)
+                runOnUiThread { forecastButton.isEnabled = true }
+                startActivity(forecastIntent)
+            } else {
+                Log.d("forecast", "Forecast fetch failed!")
+                runOnUiThread { forecastButton.isEnabled = true }
+            }
+        }
+
     }
 
     /*

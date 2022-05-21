@@ -76,7 +76,7 @@
         android:hint="@string/text_field_hint"
         android:inputType="textPersonName"
         android:scrollHorizontally="true"
-        android:text=""
+        android:text="Tampere"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="61dp" />
@@ -89,5 +89,18 @@
         android:text="@string/search_button_title"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:layout_editor_absoluteX="44dp" />
+
+    <Button
+        android:id="@+id/forecast_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:text="@string/forecast_def_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.6"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.797" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
