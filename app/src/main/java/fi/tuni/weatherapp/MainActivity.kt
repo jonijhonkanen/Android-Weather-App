@@ -14,12 +14,10 @@ import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.OnSuccessListener
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -46,13 +44,11 @@ data class Main(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Temperature(
     var temp: Double? = null,
-    //var temp: Int? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Wind(
     var speed: Double? = null,
-    //var speed: Int? = null,
 )
 
 class MainActivity : AppCompatActivity() {
@@ -81,11 +77,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var unit : String
     lateinit var iconCode : String
     private var count : Int = 8
-    //Using Tampere as default
-    /*
-    * var lat : Double? = 61.4991
-    var lon : Double? = 23.7871
-    * */
     var lat : Double? = null
     var lon : Double? = null
     var url : String = ""

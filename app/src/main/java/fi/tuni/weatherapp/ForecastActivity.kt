@@ -32,12 +32,12 @@ data class Info(
     var description : String? = null,
 )
 
-var unit : String? = null
-var tempLabel : String? = null
 class ForecastActivity : AppCompatActivity() {
 
     private lateinit var recyclerView : RecyclerView
     private var forecast : String? = null
+    var unit : String? = null
+    var tempLabel : String? = null
 
     private var extras: Bundle? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,8 +45,6 @@ class ForecastActivity : AppCompatActivity() {
         setContentView(R.layout.forecast_main)
 
         recyclerView = findViewById(R.id.recyclerView)
-
-
         extras= intent.extras
 
         if(extras != null) {
@@ -57,11 +55,10 @@ class ForecastActivity : AppCompatActivity() {
                 processForecast(forecast!!)
             }
         }
-
     }
 
-    //This can be an independent file
-    class ViewAdapter(private var itemList : MutableList<WeatherItem>) : RecyclerView.Adapter<ViewAdapter.MyViewHolder>() {
+    //Adapter for displaying forecast info cards
+    inner class ViewAdapter(private var itemList : MutableList<WeatherItem>) : RecyclerView.Adapter<ViewAdapter.MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val itemView = LayoutInflater.from(parent.context).inflate(R.layout.forecast_row,
                 parent, false)
@@ -73,10 +70,10 @@ class ForecastActivity : AppCompatActivity() {
             holder.descText.text = currentItem.weather?.get(0)?.description ?: "Not found"
             holder.timeStamp.text = currentItem.dt_txt
 
-            //Set unit for temperature
+            //Set unit label for temperature
             when(unit) {
-                "metric" -> tempLabel = " °C"
-                "imperial" -> tempLabel = " °F"
+                "metric" -> tempLabel = "°C"
+                "imperial" -> tempLabel = "°F"
             }
 
             val tempLabelText = currentItem.main?.temp?.roundToInt().toString() + tempLabel
@@ -85,7 +82,7 @@ class ForecastActivity : AppCompatActivity() {
 
         override fun getItemCount() = itemList.size
 
-        class MyViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
+        inner class MyViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
             val timeStamp : TextView = itemView.findViewById(R.id.forecast_time)
             val descText : TextView = itemView.findViewById(R.id.forecast_description)
             val tempText : TextView = itemView.findViewById(R.id.forecast_temp)
@@ -95,7 +92,7 @@ class ForecastActivity : AppCompatActivity() {
     private fun processForecast(forecast : String) {
 
         val result : Forecast = ObjectMapper().readValue(forecast, Forecast::class.java)
-        Log.d("forecast", result.toString())
+        //Log.d("forecast", result.toString())
         val list = result.list
 
         if (list != null) {
@@ -107,8 +104,6 @@ class ForecastActivity : AppCompatActivity() {
                     item.weather!![0].description = descText.replaceFirstChar { it.uppercase() }
                 }
 
-                //item.weather?.get(0)?.let { it.description?.let { it1 -> Log.d("forecast", it1) } }
-                //Log.d("forecast", item.toString())
                 Log.d("forecast", item.dt_txt!!)
                 //Send list to adapter
                 runOnUiThread {
@@ -120,7 +115,5 @@ class ForecastActivity : AppCompatActivity() {
             }
         }
     }
-
-
 
 }
