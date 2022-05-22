@@ -7,7 +7,7 @@
     <string name="default_wind">Wind speed</string>
     <string name="text_field_hint">At your current location</string>
     <string name="text_field_guide">Use your current location or write one</string>
-    <string name="search_button_title">Get Weather Info</string>
+    <string name="search_button_title">Get Current Weather</string>
     <string name="forecast_def_title">Get forecast</string>
 
     <string name="api_key">fd3e1dc8b00f86224410cd96b97454eb</string>

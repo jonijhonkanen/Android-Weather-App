@@ -26,45 +26,25 @@ import java.net.URL
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
-
-//Provide data classes
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Weather(
-    var weather : MutableList<Main>? = null,
-    var main: Temperature? = null,
-    var wind: Wind? = null,
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Main(
-    var description: String = "",
-    var icon : String? = null
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Temperature(
-    var temp: Double? = null,
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Wind(
-    var speed: Double? = null,
-)
-
+/*
+* Main activity of the application.
+* This activity contains the main view for displaying current weather.
+*/
 class MainActivity : AppCompatActivity() {
 
     //UI Functionalities
     lateinit var button : Button
     lateinit var forecastButton : Button
     lateinit var textField : EditText
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    //Device location provider
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     //UI Image
     lateinit var weatherImage : ImageView
     var weatherIcon : Bitmap? = null
 
-    //UI Text
+    //UI Texts
     lateinit var locationTextView : TextView
     lateinit var desc : TextView
     lateinit var windText : TextView
@@ -76,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var locText : String
     lateinit var unit : String
     lateinit var iconCode : String
-    private var count : Int = 8
+    private var count : Int = 16
     var lat : Double? = null
     var lon : Double? = null
     var url : String = ""
@@ -88,30 +68,30 @@ class MainActivity : AppCompatActivity() {
         //Default image
         weatherImage = findViewById(R.id.icon)
 
+        //UI Components
         locationTextView = findViewById(R.id.location_name)
         desc = findViewById(R.id.description)
         windText = findViewById(R.id.wind)
         temperatureText = findViewById(R.id.temperature)
-
         textField = findViewById(R.id.editText)
 
+        //UI function variables
         apikey = getString(R.string.api_key)
         lang = "en"
         locText = ""
         unit = "metric"
         iconCode = ""
 
-        //url = "https://api.openweathermap.org/data/2.5/weather?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}"
-        //https://api.openweathermap.org/data/2.5/weather?q=Tampere&units=metric&lang=en&appid=fd3e1dc8b00f86224410cd96b97454eb
-        //https://api.openweathermap.org/data/2.5/weather?lat=${gpsLocation.lat}&lon=${gpsLocation.lon}&units=metric&lang=${lang}&appid=${APIKey}
-
+        //Location service
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        //Current weather button
         button = findViewById(R.id.button)
         button.setOnClickListener() {
             makeRequest()
         }
 
+        //Forecast button
         forecastButton = findViewById(R.id.forecast_button)
         forecastButton.setOnClickListener() {
             fetchForecast()
@@ -120,7 +100,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    //Operate UI changes
+    /*
+    * Make a request for current weather data.
+    *
+    * This function calls the fetchData() function with a specific url and updates the UI based on the
+    * received json string. The json is parsed and the relevant data is stored into the data classes
+    * in the Dataclasses.kt file. The UI texts are based on the same data and they are updated
+    * if the json is successfully received.
+    */
     private fun makeRequest() {
 
         //Disable button while processing data fetch
@@ -140,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("valmisjson", lon.toString())
         Log.d("valmisjson", lat.toString())
 
+        //Choose between specific location query or query with
         this.url = when(textField.text.isEmpty()) {
             false -> "https://api.openweathermap.org/data/2.5/weather?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}"
             true -> "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
@@ -168,18 +156,23 @@ class MainActivity : AppCompatActivity() {
             //Process only if json result list is valid
             if(list != null){
 
-                val test = list[0].description.replaceFirstChar { it.uppercase() }
-                val iconCode = list[0].icon
+                //Capitalize the first letter of description
+                val uiDescText = list[0].description.replaceFirstChar { it.uppercase() }
 
+                //Set icon code
+                val iconCode = list[0].icon
 
                 //Check icon code validity
                 if (iconCode != null && iconCode.isNotEmpty()) {
                     //Log.d("valmisjson", iconCode)
+                    //Fetch a weather icon
                     weatherIcon = fetchImage(iconCode)
                 }
 
                 //Update UI with fetched data
                 runOnUiThread() {
+
+                    //Set weather icon image
                     if(weatherIcon != null) {
                         //Log.d("valmisjson", "Weather icon not null!")
                         weatherImage.setImageBitmap(weatherIcon)
@@ -188,7 +181,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     //UI Texts
-                    desc.text = test
+                    desc.text = uiDescText
                     if (temp != null) {
                         temperatureText.text = getString(R.string.temp_cel, temp.roundToInt().toString())
                     }
@@ -209,7 +202,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //Fetch data
+    /*
+    * Fetch weather data from OpenWeatherMap
+    *
+    * @param url A url string for data query.
+    * @return Returns a string of json data or null
+    */
     private fun fetchData(url : String) : String? {
         //Log.d("haku", "Fetching data!")
 
@@ -223,6 +221,7 @@ class MainActivity : AppCompatActivity() {
             val inputStream = conn.inputStream
             val reader = BufferedReader(InputStreamReader(inputStream))
 
+            //Construct a string of text via buffer
             reader.use {
                 var line: String?
                 do {
@@ -240,6 +239,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    /*
+    * Fetch the respective weather icon based on given icon code.
+    *
+    * @param imageCode Icon id code for the url.
+    * @return Returns a bitmap image or null.
+    */
     private fun fetchImage(imageCode : String) : Bitmap? {
         //Icon from URL
         val imageUrl = "https://openweathermap.org/img/w/$imageCode.png"
@@ -254,12 +259,18 @@ class MainActivity : AppCompatActivity() {
         return bm
     }
 
+    /*
+    * Fetch current latitude and longitude of the device.
+    */
     private fun fetchLocation() {
         Log.d("locFetch", "Fetching current location!")
         //Request permission for location
         if(checkPermissions()) {
+
+            //Check if device location is enabled
             if(isLocationEnabled()) {
 
+                //Check location access permissions
                 if (ActivityCompat.checkSelfPermission(
                         this,
                         Manifest.permission.ACCESS_FINE_LOCATION
@@ -268,6 +279,7 @@ class MainActivity : AppCompatActivity() {
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    //Open permission dialogue
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf( Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
@@ -275,14 +287,16 @@ class MainActivity : AppCompatActivity() {
                     )
                     return
                 }
+                //Get last known location
                 fusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
                     val location : Location? = task.result
                     if(location != null) {
                         //Log.d("locFetch", location.toString())
 
+                        //Set latitude and longitude
                         lon = location.longitude
                         lat = location.latitude
-                        url = "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
+
                         Log.d("locFetch", lon.toString())
                         Log.d("locFetch", lat.toString())
                     } else {
@@ -305,10 +319,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //Used for permission requests
     companion object {
         const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
     }
 
+    //To be removed
     private fun checkPermissions() : Boolean {
         //Check permissions first
         if (ActivityCompat.checkSelfPermission(
@@ -327,6 +343,9 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+    /*
+    * Makes requests for location permissions.
+    */
     private fun makePermissionRequest() {
         ActivityCompat.requestPermissions(
             this,
@@ -335,6 +354,13 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /*
+    * Notifies the user about the permission status
+    *
+    * @param requestCode Request code id as integer.
+    * @param permissions Array of request permissions.
+    * @param grantResults Grant results for the corresponding permissions
+    */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -345,22 +371,32 @@ class MainActivity : AppCompatActivity() {
         if(requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
             if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(applicationContext, "Permission granted", Toast.LENGTH_SHORT).show()
-                //Update location
-                //fetchLocation()
             } else {
                 Toast.makeText(applicationContext, "Permission denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+
+    /*
+    * Gives a confirmation of location provider, either GPS or Network based.
+    *
+    * @return A boolean result whether the GPS or Network provider location is enabled
+    */
     private fun isLocationEnabled() : Boolean {
         val locationManager : LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         //Return either GPS or Internet
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    private fun fetchForecast() {
 
+    /*
+    * Fetches the forecast and sends the json string and unit string to Forecast activity.
+    * This function calls the fetchData() function with a specific url and
+    * sends the received json string forward to Forecast activity, if the string is not
+    * null. Otherwise, the user is notified about the failed fetch with a Toast message.
+    */
+    private fun fetchForecast() {
         locText = textField.text.toString()
 
         forecastButton.isEnabled = false
@@ -371,21 +407,28 @@ class MainActivity : AppCompatActivity() {
             Log.d("valmisjson", "Fetching location...")
             fetchLocation()
         }
+
+        //Define the url needed
         this.url = when(locText.isEmpty()) {
             false -> "https://api.openweathermap.org/data/2.5/forecast?q=${locText}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=${count}"
             true -> "https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}&cnt=${count}"
         }
-        Log.d("forecast", url)
+        //Log.d("forecast", url)
+
         thread {
+            //Get the json
             val forecastJson : String? = fetchData(url)
 
             if(forecastJson != null) {
                 //Send json data to another activity
                 //Log.d("forecast", forecastJson)
                 val forecastIntent = Intent(this, ForecastActivity::class.java)
+
                 //Set extras
                 forecastIntent.putExtra("forecast", forecastJson)
                 forecastIntent.putExtra("unit", unit)
+
+                //Re-enable the button
                 runOnUiThread { forecastButton.isEnabled = true }
                 startActivity(forecastIntent)
             } else {
