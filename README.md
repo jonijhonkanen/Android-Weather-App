@@ -6,11 +6,17 @@ Joni Honkanen
 
 ### Description
 This project is a weather application for Android mobile devices. 
-It uses Open Weather Map for receiving weather data from servers and displaying it on user's device.
+It uses OpenWeatherMap for receiving weather data from servers and displaying it on user's device.
 The application allows user to fetch weather data based on a given location (city name) or user's current location (GPS or Network via device).
 
-### API used
-https://openweathermap.org/api
+### APIs used
+- https://openweathermap.org/api
+- Jackson (Json parsing)
+- FusedLocationProviderClient (Google API)
+
+###Requirements
+- Google Play Store on user's phone
+- User permissions for device location
 
 ### Limitations
 This application uses free subscription plan for API key. It comes with the following restrictions regarding API calls:
@@ -27,7 +33,7 @@ Android (Kotlin)
 ### Key features:
 - Fetch current weather info for a given location
 - Fetch weather info for user's current location
-- Fetch a weather forecast for next several hours
+- Fetch a weather forecast for next several hours (16 updates, every 3 hours)
 - Option for metric or imperial measurement units
 
 ### Screenshots
@@ -44,4 +50,4 @@ Android (Kotlin)
 https://youtu.be/4p88LRzkyG8
 
 ### Google Play link
-Not likely to be implemented (limitations with API key)
+Not implemented (limitations with API key)
