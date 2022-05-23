@@ -32,13 +32,13 @@ Android (Kotlin)
 
 ### Screenshots
 
-<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/main.png" width=240 height=520>
+<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/main.png" width=240 height=520/>
 
-<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/current.png" width=240 height=520>
+<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/current.png" width=240 height=520/>
 
-<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/forecast.png" width=240 height=520>
+<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/forecast.png" width=240 height=520/>
 
-<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/settings.png" width=240 height=520>
+<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/settings.png" width=240 height=520/>
 
 ### Screencast
 https://youtu.be/4p88LRzkyG8
