@@ -32,13 +32,16 @@ Android (Kotlin)
 
 ### Screenshots
 ######![Main screen](/images/main.jpg)
-<img src="./images/main.png" width=50% height=50%>
 ######![Current weather](/images/current.jpg)
-<img src="./images/current.png" width=50% height=50%>
 ######![Forecast view](/images/forecast.jpg)
-<img src="./images/forecast.png" width=50% height=50%>
 ######![Settings view](/images/settings.jpg)
-<img src="./images/settings.png" width=50% height=50%>
+<img src="./images/main.png" width=20% height=20%>
+
+<img src="./images/current.png" width=20% height=20%>
+
+<img src="./images/forecast.png" width=20% height=20%>
+
+<img src="./images/settings.png" width=20% height=20%>
 
 ### Screencast
 https://youtu.be/4p88LRzkyG8
