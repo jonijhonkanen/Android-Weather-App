@@ -32,7 +32,7 @@ Android (Kotlin)
 
 ### Screenshots
 
-![Main screen]<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/main.png" width=240 height=520>
+<img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/main.png" width="240" height="520">
 
 <img src="https://github.com/jonijhonkanen/Android-Weather-App/blob/main/images/current.png" width=240 height=520/>
 
