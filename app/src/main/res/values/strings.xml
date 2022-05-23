@@ -12,6 +12,14 @@
 
     <string name="api_key">fd3e1dc8b00f86224410cd96b97454eb</string>
     <string name="temp_cel"> %1$s°C</string>
+    <string name="temp_fahrenheit"> %1$s°F</string>
     <string name="wind_metric">Wind %1$s m/s</string>
+    <string name="wind_imperial">Wind %1$s mph</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_units">Choose unit:</string>
+    <string name="settings_metric">metric</string>
+    <string name="settings_imperial">imperial</string>
 
 </resources>

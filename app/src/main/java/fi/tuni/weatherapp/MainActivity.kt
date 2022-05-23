@@ -3,6 +3,7 @@ package fi.tuni.weatherapp
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,7 +15,6 @@ import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var button : Button
     lateinit var forecastButton : Button
     lateinit var textField : EditText
+    lateinit var settings : Button
 
     //Device location provider
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -51,10 +52,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var temperatureText : TextView
 
     //UI Variables
+    lateinit var preferences : SharedPreferences
     private lateinit var apikey : String
     lateinit var lang : String
     lateinit var locText : String
-    lateinit var unit : String
+    var unit : String? = null
     lateinit var iconCode : String
     private var count : Int = 16
     var lat : Double? = null
@@ -75,11 +77,15 @@ class MainActivity : AppCompatActivity() {
         temperatureText = findViewById(R.id.temperature)
         textField = findViewById(R.id.editText)
 
+        preferences = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)
+
         //UI function variables
         apikey = getString(R.string.api_key)
         lang = "en"
         locText = ""
-        unit = "metric"
+        //unit = "metric"
+        unit = preferences.getString("UNIT_KEY", "metric")
+        unit?.let { Log.d("settings", it) }
         iconCode = ""
 
         //Location service
@@ -96,8 +102,25 @@ class MainActivity : AppCompatActivity() {
         forecastButton.setOnClickListener() {
             fetchForecast()
         }
+
+        //Settings button
+        settings = findViewById(R.id.settingsButton)
+        settings.setOnClickListener {
+            checkSettings()
+        }
+
+        //Fetch device location
         fetchLocation()
 
+    }
+
+    /*
+    * Opens Settings activity
+    */
+    private fun checkSettings() {
+        Log.d("settings", "Go to settings!")
+        val settingsIntent = Intent(this, UserSettings::class.java)
+        startActivity(settingsIntent)
     }
 
     /*
@@ -105,7 +128,7 @@ class MainActivity : AppCompatActivity() {
     *
     * This function calls the fetchData() function with a specific url and updates the UI based on the
     * received json string. The json is parsed and the relevant data is stored into the data classes
-    * in the Dataclasses.kt file. The UI texts are based on the same data and they are updated
+    * in the Dataclasses.kt file. The UI texts and icon are based on the same data and they are updated
     * if the json is successfully received.
     */
     private fun makeRequest() {
@@ -114,10 +137,14 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             button.isEnabled = false
             forecastButton.isEnabled = false
+            settings.isEnabled = false
         }
 
         //Use current text input for location
         locText = textField.text.toString()
+
+        //Get current unit
+        unit = preferences.getString("UNIT_KEY", "imperial")
 
         //Location update here, if no location given
         if (locText.isEmpty()){
@@ -134,7 +161,7 @@ class MainActivity : AppCompatActivity() {
             true -> "https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&lang=${lang}&appid=${apikey}"
         }
         //Log.d("valmisjson", locText)
-        Log.d("valmisjson", url)
+        //Log.d("valmisjson", url)
 
         //Perform data fetch in a separate thread
         thread() {
@@ -184,21 +211,31 @@ class MainActivity : AppCompatActivity() {
                     //UI Texts
                     desc.text = uiDescText
                     if (temp != null) {
-                        temperatureText.text = getString(R.string.temp_cel, temp.roundToInt().toString())
+                        when(unit) {
+                            "imperial" -> temperatureText.text = getString(R.string.temp_fahrenheit, temp.roundToInt().toString())
+                            "metric" -> temperatureText.text = getString(R.string.temp_cel, temp.roundToInt().toString())
+                        }
                     }
+
                     if (windSpeed != null) {
-                        windText.text = getString(R.string.wind_metric, windSpeed.roundToInt().toString())
+                        when(unit) {
+                            "imperial" -> windText.text = getString(R.string.wind_imperial, windSpeed.roundToInt().toString())
+                            "metric" -> windText.text = getString(R.string.wind_metric, windSpeed.roundToInt().toString())
+                        }
                     }
                     locationTextView.text = if (textField.text.isEmpty()) "At current location" else textField.text.toString()
+                    //Re-enable buttons
                     button.isEnabled = true
                     forecastButton.isEnabled = true
-
+                    settings.isEnabled = true
                 }
             } else {
                 Log.d("valmisjson", "Non-valid data fetch!")
                 runOnUiThread {
+                    //Re-enable buttons
                     button.isEnabled = true
                     forecastButton.isEnabled = true
+                    settings.isEnabled = true
                     Toast.makeText(applicationContext, "Error while fetching data!", Toast.LENGTH_SHORT,).show()
                 }
             }
@@ -403,10 +440,14 @@ class MainActivity : AppCompatActivity() {
     * null. Otherwise, the user is notified about the failed fetch with a Toast message.
     */
     private fun fetchForecast() {
+        //Get current location
         locText = textField.text.toString()
+        //Get current unit
+        unit = preferences.getString("UNIT_KEY", "imperial")
 
         button.isEnabled = false
         forecastButton.isEnabled = false
+        settings.isEnabled = false
         Log.d("forecast", "Fetching forecast")
         Log.d("forecast", locText)
         //Check if the location is defined
@@ -435,18 +476,21 @@ class MainActivity : AppCompatActivity() {
                 forecastIntent.putExtra("forecast", forecastJson)
                 forecastIntent.putExtra("unit", unit)
 
-                //Re-enable the button
                 runOnUiThread {
+                    //Re-enable the button
                     forecastButton.isEnabled = true
                     button.isEnabled = true
+                    settings.isEnabled = true
                 }
                 startActivity(forecastIntent)
             } else {
                 Log.d("forecast", "Forecast fetch failed!")
                 runOnUiThread {
                     Toast.makeText(this, "Forecast fetch failed!", Toast.LENGTH_SHORT).show()
+                    //Re-enable buttons
                     forecastButton.isEnabled = true
                     button.isEnabled = true
+                    settings.isEnabled = true
                 }
             }
         }

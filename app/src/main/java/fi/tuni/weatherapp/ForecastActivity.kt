@@ -38,7 +38,6 @@ class ForecastActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.forecast_main)
 
-
         recyclerView = findViewById(R.id.recyclerView)
         extras= intent.extras
 
