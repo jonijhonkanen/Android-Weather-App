@@ -113,6 +113,7 @@ class MainActivity : AppCompatActivity() {
         //Disable button while processing data fetch
         runOnUiThread {
             button.isEnabled = false
+            forecastButton.isEnabled = false
         }
 
         //Use current text input for location
@@ -190,12 +191,14 @@ class MainActivity : AppCompatActivity() {
                     }
                     locationTextView.text = if (textField.text.isEmpty()) "At current location" else textField.text.toString()
                     button.isEnabled = true
+                    forecastButton.isEnabled = true
 
                 }
             } else {
                 Log.d("valmisjson", "Non-valid data fetch!")
                 runOnUiThread {
                     button.isEnabled = true
+                    forecastButton.isEnabled = true
                     Toast.makeText(applicationContext, "Error while fetching data!", Toast.LENGTH_SHORT,).show()
                 }
             }
@@ -324,7 +327,11 @@ class MainActivity : AppCompatActivity() {
         const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
     }
 
-    //To be removed
+    /*
+    * Checks the current permissions for device location data
+    *
+    * @return Return a boolean value whether permissions are granted or not
+    */
     private fun checkPermissions() : Boolean {
         //Check permissions first
         if (ActivityCompat.checkSelfPermission(
@@ -339,7 +346,6 @@ class MainActivity : AppCompatActivity() {
         ) {
             return true
         }
-
         return false
     }
 
@@ -399,6 +405,7 @@ class MainActivity : AppCompatActivity() {
     private fun fetchForecast() {
         locText = textField.text.toString()
 
+        button.isEnabled = false
         forecastButton.isEnabled = false
         Log.d("forecast", "Fetching forecast")
         Log.d("forecast", locText)
@@ -429,13 +436,17 @@ class MainActivity : AppCompatActivity() {
                 forecastIntent.putExtra("unit", unit)
 
                 //Re-enable the button
-                runOnUiThread { forecastButton.isEnabled = true }
+                runOnUiThread {
+                    forecastButton.isEnabled = true
+                    button.isEnabled = true
+                }
                 startActivity(forecastIntent)
             } else {
                 Log.d("forecast", "Forecast fetch failed!")
                 runOnUiThread {
                     Toast.makeText(this, "Forecast fetch failed!", Toast.LENGTH_SHORT).show()
                     forecastButton.isEnabled = true
+                    button.isEnabled = true
                 }
             }
         }
