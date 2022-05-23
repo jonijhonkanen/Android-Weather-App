@@ -31,7 +31,10 @@ Android (Kotlin)
 - Option for metric or imperial measurement units
 
 ### Screenshots
-To be implemented
+![Main screen](/images/main.jpg)
+![Current weather](/images/current.jpg)
+![Forecast view](/images/forecast.jpg)
+![Settings view](/images/settings.jpg)
 
 ### Screencast
 https://youtu.be/4p88LRzkyG8
