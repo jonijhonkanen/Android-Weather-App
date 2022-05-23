@@ -31,17 +31,14 @@ Android (Kotlin)
 - Option for metric or imperial measurement units
 
 ### Screenshots
-######![Main screen](/images/main.jpg)
-######![Current weather](/images/current.jpg)
-######![Forecast view](/images/forecast.jpg)
-######![Settings view](/images/settings.jpg)
-<img src="./blob/main/images/main.png" width=20% height=20%>
 
-<img src="./blob/main/images/current.png" width=20% height=20%>
+<img src="./images/main.png" width=240 height=520>
 
-<img src="./blob/main/images/forecast.png" width=20% height=20%>
+<img src="./images/current.png" width=240 height=520>
 
-<img src="./blob/main/images/settings.png" width=20% height=20%>
+<img src="./images/forecast.png" width=240 height=520>
+
+<img src="./images/settings.png" width=240 height=520>
 
 ### Screencast
 https://youtu.be/4p88LRzkyG8
