@@ -414,6 +414,7 @@ class MainActivity : AppCompatActivity() {
         if(requestCode == PERMISSION_REQUEST_ACCESS_LOCATION) {
             if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(applicationContext, "Permission granted", Toast.LENGTH_SHORT).show()
+                fetchLocation()
             } else {
                 Toast.makeText(applicationContext, "Permission denied", Toast.LENGTH_SHORT).show()
             }
