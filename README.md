@@ -46,7 +46,7 @@ Android (Kotlin)
 
 <img src="images/settings.jpg" width="240" height="520">
 
-### Screencast
+### Screencast (in Finnish)
 https://youtu.be/4p88LRzkyG8
 
 ### Google Play link
