@@ -14,7 +14,7 @@ The application allows user to fetch weather data based on a given location (cit
 - Jackson (Json parsing)
 - FusedLocationProviderClient (Google API)
 
-###Requirements
+### Requirements
 - Google Play Store on user's phone
 - User permissions for device location
 
